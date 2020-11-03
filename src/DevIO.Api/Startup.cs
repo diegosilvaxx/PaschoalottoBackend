@@ -1,14 +1,18 @@
 using AutoMapper;
 using DevIO.Api.Configuration;
 using DevIO.Api.Configurations;
+using DevIO.Api.Extensions;
 using DevIO.Data.Context;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
 
 namespace DevIO.Api
 {
@@ -16,12 +20,22 @@ namespace DevIO.Api
     {
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
+        [System.Obsolete]
+        public Startup(IHostingEnvironment hostEnvironment, IConfiguration configuration)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(hostEnvironment.ContentRootPath)
+                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{hostEnvironment.EnvironmentName}.json", true, true)
+                .AddEnvironmentVariables();
+
+            if (hostEnvironment.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+            Configuration = builder.Build();
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MeuDbContext>(options =>
@@ -36,6 +50,12 @@ namespace DevIO.Api
             services.WebApiConfig();
 
             services.AddSwaggerConfig();
+
+            services.AddHealthChecks()
+                .AddCheck("Produtos",new SqlServerHealthCheck(Configuration.GetConnectionString("DefaultConnection")))
+                .AddSqlServer(Configuration.GetConnectionString("DefaultConnection"), name: "BancoSQL");
+
+            services.AddHealthChecksUI().AddInMemoryStorage();
 
             services.ResolveDependencies();
         }
@@ -59,6 +79,19 @@ namespace DevIO.Api
             app.UseMvcConfiguration();
 
             app.UseSwaggerConfig(provider);
+
+            app.UseHealthChecks("/healthcheck", new HealthCheckOptions
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+
+            app.UseHealthChecksUI(options =>
+            {
+                options.UIPath = "/healthchecks-ui";
+                options.ApiPath = "/health-ui-api";
+            });
+
         }
     }
 }

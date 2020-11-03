@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "secrets1": {
+      "restored": true,
+      "restoreTime": "2020-10-31T03:59:58.2052192Z"
+    },
+    "mssql1": {
+      "restored": true,
+      "restoreTime": "2020-10-31T02:51:11.5414815Z"
+    }
+  },
+  "parameters": {
+    "mssql1.subscriptionId": {
+      "Type": "subscription",
+      "Value": "98c56856-f47c-4f73-b7a1-feb1c0e634cd"
+    },
+    "mssql1.resourceGroupName": {
+      "Type": "resourceGroup",
+      "Value": "Paschoalotto"
+    }
+  }
+}

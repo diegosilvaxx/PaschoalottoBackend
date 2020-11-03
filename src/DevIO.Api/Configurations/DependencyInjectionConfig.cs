@@ -25,14 +25,11 @@ namespace DevIO.Api.Configurations
             #endregion
 
             #region SERVICES
-            services.AddScoped<IFornecedorService, FornecedorService>();
-            services.AddScoped<IProdutoService, ProdutoService>();
+            services.AddScoped<IPesquisaDebitoService, PesquisaDebitoService>();
             #endregion
 
             #region REPOSITORIES
-            services.AddScoped<IFornecedorRepository, FornecedorRepository>();
-            services.AddScoped<IProdutoRepository, ProdutoRepository>();
-            services.AddScoped<IEnderecoRepository, EnderecoRepository>();
+            services.AddScoped<IPesquisaDebitoRepository, PesquisaDebitoRepository>();
             #endregion
 
             #region OTHERS

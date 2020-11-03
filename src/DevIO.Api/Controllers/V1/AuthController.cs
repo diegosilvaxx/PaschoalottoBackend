@@ -3,6 +3,7 @@ using DevIO.Api.DTO;
 using DevIO.Api.Extensions;
 using DevIO.Business.Intefaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -25,7 +26,6 @@ namespace DevIO.Api.Controllers.V1
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly AppSettings _appSettings;
-        //private readonly ILogger _logger;
 
         public AuthController(INotificador notificador,
                               SignInManager<IdentityUser> signInManager,
@@ -56,7 +56,6 @@ namespace DevIO.Api.Controllers.V1
             {
                 await _signInManager.SignInAsync(user, false);
                 return CustomResponse(await GerarJwt(user.Email));
-                //return CustomResponse(await GerarJwt(user.Email));
             }
             foreach (var error in result.Errors)
             {
@@ -66,6 +65,7 @@ namespace DevIO.Api.Controllers.V1
             return CustomResponse(registerUserDto);
         }
 
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("login")]
         public async Task<ActionResult> Login(LoginUserDto loginUserDto)
         {
@@ -76,8 +76,6 @@ namespace DevIO.Api.Controllers.V1
             if (result.Succeeded)
             {
                 return CustomResponse(await GerarJwt(loginUserDto.Email));
-                //_logger.LogInformation("Usuario " + loginUserDto.Email + " logado com sucesso");
-                //return CustomResponse(await GerarJwt(loginUserDto.Email));
             }
             if (result.IsLockedOut)
             {
